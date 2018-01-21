@@ -1,25 +1,22 @@
 import React from 'react';
 
 class List extends React.Component{	
-	constructor(props) {
-		super(props)
-		this.state = {
-			items : props.todos
-		};
+
+	edit = (_id) => {
+		this.props.edit(_id);
 	}
-	edit = (key) => {
-		this.props.edit(key);
-	}
-	delete=(key)=>{
-		this.props.delete(key);
+	delete = (_id) => {
+		this.props.delete(_id);
 	}
 	render(){
 		return (<div>
 			<ul>
-          		this.state.items.map((item) => <li key={item._id}>{item}
+          		{this.props.todos.map((item) => {
+          			return (<li key={item._id}>{item}
       				<button onClick={this.edit(item._id)}>Edit</button>
       				<button onClick={this.delete(item._id)}>Delete</button>
       			</li>)
+      		})}
   			</ul>
   		</div>)
   

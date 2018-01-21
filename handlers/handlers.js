@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const todoModel = require('../models/todos');
 
 function getTodos(req, res){
-    console.log('aaaaaaaaaa')
     const errors = Object.assign({}, req.session.errors);
     req.session.errors = null;
-    res.sendFile('./public/index.html');
+    res.sendFile('./build/index.html');
 };
 
 function getApiTodos(req, res){

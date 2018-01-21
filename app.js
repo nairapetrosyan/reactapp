@@ -10,9 +10,11 @@ const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/";
 const ObjectID = require('mongodb').ObjectID;
 const mongoose = require('mongoose');
-const app = express();
-app.use(express.static('public'));
+const cors = require('cors');
 
+
+const app = express();
+app.use(cors());
 //app.set('view engine', 'pug');
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -38,4 +40,4 @@ mongoose.Promise=global.Promise;
 
 app.listen(3000, () => {
     console.log('server started')
-})/*.fetch('http://localhost:8080')*/
+});

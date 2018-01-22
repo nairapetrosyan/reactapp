@@ -2,8 +2,6 @@ const mongoose = require('mongoose');
 const todoModel = require('../models/todos');
 
 function getTodos(req, res){
-    const errors = Object.assign({}, req.session.errors);
-    req.session.errors = null;
     res.sendFile('./build/index.html');
 };
 
@@ -18,53 +16,49 @@ function getApiTodos(req, res){
 
 function addApiTodo(req, res){
 
-    req.checkBody('addtodo').notEmpty().withMessage("Todo is required");
+    req.checkBody('todo').notEmpty().withMessage("Todo is required");
     const errors = req.validationErrors();
     if(errors){
-        req.session.errors = errors;
         todoModel.find({}).then(todos=> {
-            console.log(todos)
             res.send({errors, todos});
         })
     }
     else {
-        const todo=new todoModel({todo : req.body.addtodo})
-        todo.save().then((err)=>todoModel.find({}).then(todos=>{
-            console.log(todos)
-            res.send({errors, todos});
+        const todo=new todoModel({todo : req.body.todo})
+        todo.save().then(todo=>{
+            res.send(todo);
         }).catch(errors=>
-            res.send({errors: [{msg: "Something went wrong"}], todos : []})))
+            res.send({todos : []}))
 
     }
 };
 
 function editApiTodo(req, res) {
-    req.checkBody('addtodo').notEmpty().withMessage("Edit is required");
+    req.checkBody('todo').notEmpty().withMessage("Edit is required");
     const errors = req.validationErrors();
     if(errors){
-        req.session.errors = errors;
         todoModel.find({}).then(todos=> {
-            console.log(todos)
             res.send({errors, todos});
         })
           }
     else {
-        todoModel.findByIdAndUpdate({_id:req.params._id }, { $set: { todo: req.body.addtodo }}).then(err=>
-            todoModel.find({}).then(todos=>{
-                res.send({errors, todos});
-            }).catch(errors=>
-                res.send({errors: [{msg: "Something went wrong"}], todos : []}))
-        );
-    }
+            todoModel.findByIdAndUpdate(req.params._id, { $set: { todo: req.body.todo }}, { new : true}).then(todo=>
+            {
+                res.send(todo)
+            }).catch(errors=>{
+                res.send({ todos : []});
+            })
+
+
+        }
 };
 
 function deleteTodo(req, res) {
-    todoModel.remove({_id: req.params._id}).then(err=>
-        todoModel.find({}).then(todos=>{
-            res.send({todos})
-                ;
+    todoModel.remove({_id: req.params._id}).
+        then(()=>{
+            res.send({_id: req.params._id});
         }).catch(errors=>
-            res.send({errors: [{msg: "Something went wrong"}], todos : []})));
+            res.send({errors: [{msg: "Something went wrong"}], todos : []}));
 };
 
 module.exports = {

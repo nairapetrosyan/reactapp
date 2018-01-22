@@ -7,7 +7,9 @@ class AddTodo extends React.Component{
 		super(props);
 		this.state = {
 			todos : [],
-      url: "http://localhost:3000/api/todos/"
+            editMode : this.addItem,
+            editId: "",
+            url: "http://localhost:3000/api/todos/"
 		}
 
 	}
@@ -19,76 +21,84 @@ class AddTodo extends React.Component{
           })
           }).catch(console.error);
   }
-	addItem = (event) => {
-  event.preventDefault();
-     fetch(this.state.url,{
-    method: 'POST',
-    body: JSON.stringify({
-      todo: this._inputElement.value,
-      _id : Date.now()
-    }),
-    headers: {"Content-Type": "application/json"}
-  })
-  .then(()=>{
-    this.getData();
-  }).catch(console.error);
-  
-		
-	}
+  addItem = () => {
+	    const todo = this._inputElement.value;
+	    fetch(this.state.url,{
+            method: 'POST',
+            body: JSON.stringify({todo}),
+            headers: {"Content-Type": "application/json"}
+        })
+            .then((res) => res.json())
+            .then((todo) => {
+                this.setState({
+                    todos: [...this.state.todos, todo]
+                });
+            }).catch(console.error);
+	    this._inputElement.value ="";
+  }
+
+  editMode = (_id) => {
+	    const it = this.state.todos.filter((item)=> {
+            return (item._id === _id);
+        })[0];
+	    this._inputElement.value=it.todo;
+        this.setState({
+            editMode : this.editItem,
+            editId : _id
+        })
+  }
+
+  editItem = ()=> {
+	    event.preventDefault();
+        fetch(this.state.url+this.state.editId,{
+            method: 'PUT',
+            body: JSON.stringify({
+                todo: this._inputElement.value
+            }),
+            headers: {"Content-Type": "application/json"}
+        })
+            .then((res) => res.json())
+            .then((todo) => {
+                const updated = this.state.todos.map((item)=> {
+                    if(item._id == todo._id) {
+                        item.todo = todo.todo;
+                    }
+                    return item;
+                });
+                this.setState({
+                    todos: updated,
+                    editMode : this.addItem
+                })
+            }).catch(console.error);
+  }
+
   deleteItem = (_id)=> {
-    /*var filteredItems = this.state.todos.filter(function (item) {
-      return (item._id !== _id);
-    });
-    this.setState({
-      todos: filteredItems
-    });*/
-    fetch(this.state.url+_id, {
+	    fetch(this.state.url+_id, {
             method: 'delete'
         })
-            .then(()=>{
-    this.getData();
-  }).catch(console.error);
-    
+            .then((res) => res.json())
+            .then((todo) => {
+                const updated = this.state.todos.filter((item)=> {
+                    return item._id !== todo._id;
+                });
+                this.setState({
+                    todos: updated
+                })
+            }).catch(console.error);
+
   }
+  render() {
+	    return (
+	        <div className="addtodo">
+                <input key="addtodo" placeholder="enter task" ref={(a) => this._inputElement = a}>
+                </input>
+                <button type="submit" ref={(a) => this.buttonElem = a} onClick={this.state.editMode}>add</button>
+                <List todos={this.state.todos} edit={this.editMode} delete={this.deleteItem} input={this._inputElement} addbutton={this.buttonElem}/>
+            </div>
+        );
 
-  editItem = (_id)=> {
-    const it = this.state.items.filter((item)=> {
-      return (item._id === _id);
-    })[0];
-    this._inputElement.value=it.todo;
-    
-
-      event.preventDefault();
-      fetch(this.state.url+_id,{
-        method: 'PUT',
-        body: JSON.stringify({
-          todo: this._inputElement.value,
-          _id : _id
-        }),
-        headers: {"Content-Type": "application/json"}
-        })
-        .then(()=>{
-    this.getData();
-  }).catch(console.error);
-  }
-	render() {
-      return (
-        <div className="addtodo">
-            <form onSubmit = {this.addItem}>
-              <input key="addtodo" placeholder="enter task" ref={(a) => this._inputElement = a}>
-              </input>
-              <button type="submit">add</button>
-            </form>
-          <List todos={this.state.todos} delete={this.deleteItem} edit={this.editItem}/>
-        </div>
-      );
-    }
-};
+	}
+}
 
 
-ReactDOM.render(
-  <div>
-    <AddTodo/>
-  </div>,
-  document.getElementById('app')
-);
+ReactDOM.render(<div><AddTodo/></div>, document.getElementById('app'));

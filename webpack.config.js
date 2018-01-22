@@ -5,7 +5,7 @@ const webpack = require('webpack');
 
 
 module.exports = {
-    entry: './source/AddTodo.js',
+    entry: './source/components/AddTodo.js',
     output: {
         path: path.join(__dirname, './build'),
         filename: 'bundle.js',
